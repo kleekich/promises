@@ -1,5 +1,5 @@
 /**
- * Create the promise returning `Async` suffixed versions of the functions below,
+ * Create the promise-returning, `Async`-suffixed versions of the functions below,
  * Promisify them if you can, otherwise roll your own promise returning function
  */ 
 
@@ -27,7 +27,26 @@ var getGitHubProfile = function(user, callback) {
   });
 };
 
-var getGitHubProfileAsync; // TODO
+var getGitHubProfileAsync = function(user) {
+  var options = {
+    url: 'https://api.github.com/users/' + user, 
+    headers: { 'User-Agent': 'request'},
+    json: true
+  };
+  
+  var promise = new Promise((resolve, reject) => {
+    request.get(options, function(err, res, body) {
+      if(err) {
+        reject(err);
+      } else if(body.message) {
+        reject(new Error('Failed to get GitHub profile: '+body.message));
+      } else {
+        resolve(body);
+      }
+    });
+  }); 
+  return promise;
+}; // TODO
 
 
 // (2) Asyncronous token generation
@@ -38,7 +57,18 @@ var generateRandomToken = function(callback) {
   });
 };
 
-var generateRandomTokenAsync; // TODO
+var generateRandomTokenAsync = function () {
+  var promise = new Promise((resolve, reject) => {
+    crypto.randomBytes(20, function(err, buffer) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(buffer.toString('hex'));
+      }
+    });
+  });
+  return promise;
+}; // TODO
 
 
 // (3) Asyncronous file manipulation
@@ -56,7 +86,23 @@ var readFileAndMakeItFunny = function(filePath, callback) {
   });
 };
 
-var readFileAndMakeItFunnyAsync; // TODO
+var readFileAndMakeItFunnyAsync = function(filePath){
+  var promise = new Promise((resolve, reject) => {
+    fs.readFile(filePath, 'utf8', (err, file) => {
+      if(err) {
+        reject(err);
+      } else {
+        var funnyFile = file.split('\n')
+                          .map((line) => {
+                            return line + ' lol';
+                          })
+                          .join('\n');
+        resolve(funnyFile);
+      }
+    });
+  });
+  return promise;
+}; // TODO
 
 // Export these functions so we can test them and reuse them in later exercises
 module.exports = {
