@@ -10,11 +10,67 @@
 
 var fs = require('fs');
 var Promise = require('bluebird');
+var github = require('./promisification');
+var request = require('request');
 
 
 
 var fetchProfileAndWriteToFile = function(readFilePath, writeFilePath) {
-  // TODO
+  var user;
+  var jBody;
+  var A = function() {
+    var read = new Promise((resolve, reject) => {
+      fs.readFile(readFilePath, (err, file) => {
+        if (err) {
+          reject(err);
+        } else {
+          user = file.toString().split('\n')[0];
+          resolve(file);
+        }
+      });
+    });
+    return read;
+  }
+  
+  var B = function() {
+    var options = {
+      url: 'https://api.github.com/users/' + user, 
+      headers: { 'User-Agent': 'request'},
+      json: true
+    };
+    
+    var promise = new Promise((resolve, reject) => {
+      request.get(options, function(err, res, body) {
+        if(err) {
+          reject(err);
+        } else if(body.message) {
+          reject(new Error('Failed to get GitHub profile: '+body.message));
+        } else {
+          jBody = body;
+          resolve(body);
+        }
+      });
+    }); 
+    return promise;
+  }
+  
+  var C = function() {
+    var write = new Promise((resolve, reject) => {
+      fs.writeFile(writeFilePath, JSON.stringify(jBody) ,(err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(data);
+        }
+      }); 
+    });
+    return write;
+  }
+  
+  return A()
+  .then(B)
+  .then(C);
+
 };
 
 // Export these functions so we can test them
