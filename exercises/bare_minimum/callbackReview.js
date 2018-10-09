@@ -14,7 +14,7 @@ var pluckFirstLineFromFile = function (filePath, callback) {
       callback(null, data.toString().split('\n')[0]);
     }
     
-  })
+  });
   // TODO
 };
 
@@ -25,7 +25,7 @@ var getStatusCode = function (url, callback) {
       if (err) {
         callback(err, null);
       } else {
-        callback(null, response.statusCode)
+        callback(null, response.statusCode);
       }
     });    
 };
